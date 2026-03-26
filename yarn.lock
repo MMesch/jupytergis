@@ -996,6 +996,7 @@ __metadata:
     ts-patch: ^3.3.0
     typescript: ^5
     typescript-transform-paths: ^3.5.5
+    uuid: ^11.0.0
     vaul: ^1.1.2
   languageName: unknown
   linkType: soft
@@ -15394,7 +15395,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^11.1.0":
+"uuid@npm:^11.0.0, uuid@npm:^11.1.0":
   version: 11.1.0
   resolution: "uuid@npm:11.1.0"
   bin:

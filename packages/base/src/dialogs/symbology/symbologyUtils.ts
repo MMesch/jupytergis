@@ -5,6 +5,7 @@ import {
   IWebGlLayer,
 } from '@jupytergis/schema';
 import colormap from 'colormap';
+import { UUID } from '@lumino/coreutils';
 
 import { ColorRampName } from './colorRampUtils';
 import { IStopRow } from './symbologyDialog';
@@ -180,6 +181,7 @@ export namespace VectorUtils {
             const pairKey = `${color[key][i]}-${color[key][i + 1]}`;
             if (!seenPairs.has(pairKey)) {
               valueColorPairs.push({
+                id: UUID.uuid4(),
                 stop: color[key][i],
                 output: color[key][i + 1],
               });
@@ -193,6 +195,7 @@ export namespace VectorUtils {
             const pairKey = `${color[key][i][2]}-${color[key][i + 1]}`;
             if (!seenPairs.has(pairKey)) {
               valueColorPairs.push({
+                id: UUID.uuid4(),
                 stop: color[key][i][2],
                 output: color[key][i + 1],
               });
@@ -231,6 +234,7 @@ export namespace VectorUtils {
 
     for (let i = COLOR_EXPR_STOPS_START; i < circleRadius.length; i += 2) {
       const obj: IStopRow = {
+        id: UUID.uuid4(),
         stop: circleRadius[i],
         output: circleRadius[i + 1],
       };
@@ -278,7 +282,11 @@ export namespace Utils {
     }
 
     for (let i = 0; i < nClasses; i++) {
-      valueColorPairs.push({ stop: stops[i], output: colorMap[i] });
+      valueColorPairs.push({
+        id: UUID.uuid4(),
+        stop: stops[i],
+        output: colorMap[i],
+      });
     }
 
     return valueColorPairs;
