@@ -1,8 +1,4 @@
-import {
-  IJupyterGISClientState,
-  IJupyterGISModel,
-  IJupyterGISSettings,
-} from '@jupytergis/schema';
+import { IJupyterGISClientState, IJupyterGISModel } from '@jupytergis/schema';
 import * as React from 'react';
 
 interface IUseRightPanelOptionsResult {
@@ -10,45 +6,43 @@ interface IUseRightPanelOptionsResult {
   editorMode: boolean;
   showEditor: boolean;
   storyPanelTitle: string;
-  curTab: string;
-  setCurTab: React.Dispatch<React.SetStateAction<string>>;
   toggleEditor: () => void;
 }
 
+/**
+ * Manages story map presentation mode and editor mode for a right-side panel.
+ *
+ * Fires optional callbacks when tab-switching events occur, so the caller can
+ * manage its own curTab across any set of tabs (right panel only, or merged).
+ */
 export function useRightPanelOptions(
   model: IJupyterGISModel,
-  settings: IJupyterGISSettings,
+  opts?: {
+    onPresentationModeEnabled?: () => void;
+    onIdentifyFeatures?: () => void;
+  },
 ): IUseRightPanelOptionsResult {
   const [editorMode, setEditorMode] = React.useState(true);
   const [storyMapPresentationMode, setStoryMapPresentationMode] =
     React.useState(model.getOptions().storyMapPresentationMode ?? false);
 
-  const [curTab, setCurTab] = React.useState<string>(() => {
-    const initialPresentationMode =
-      model.getOptions().storyMapPresentationMode ?? false;
-    if (initialPresentationMode) {
-      return 'storyPanel';
-    }
-    if (!settings.objectPropertiesDisabled) {
-      return 'objectProperties';
-    }
-    if (!settings.storyMapsDisabled) {
-      return 'storyPanel';
-    }
-    if (!settings.annotationsDisabled) {
-      return 'annotations';
-    }
-    if (!settings.identifyDisabled) {
-      return 'identifyPanel';
-    }
-    return '';
+  // Keep refs fresh to avoid stale closures in the effect below
+  const onPresentationModeEnabledRef = React.useRef(
+    opts?.onPresentationModeEnabled,
+  );
+  const onIdentifyFeaturesRef = React.useRef(opts?.onIdentifyFeatures);
+  React.useEffect(() => {
+    onPresentationModeEnabledRef.current = opts?.onPresentationModeEnabled;
+    onIdentifyFeaturesRef.current = opts?.onIdentifyFeatures;
   });
 
   React.useEffect(() => {
     const onOptionsChanged = () => {
       const { storyMapPresentationMode } = model.getOptions();
       setStoryMapPresentationMode(storyMapPresentationMode ?? false);
-      storyMapPresentationMode && setCurTab('storyPanel');
+      if (storyMapPresentationMode) {
+        onPresentationModeEnabledRef.current?.();
+      }
     };
     let currentlyIdentifiedFeatures: any = undefined;
     const onAwarenessChanged = (
@@ -64,7 +58,7 @@ export function useRightPanelOptions(
         localState.identifiedFeatures.value !== currentlyIdentifiedFeatures
       ) {
         currentlyIdentifiedFeatures = localState.identifiedFeatures.value;
-        setCurTab('identifyPanel');
+        onIdentifyFeaturesRef.current?.();
       }
     };
 
@@ -94,8 +88,6 @@ export function useRightPanelOptions(
     editorMode,
     showEditor,
     storyPanelTitle,
-    curTab,
-    setCurTab,
     toggleEditor,
   };
 }
